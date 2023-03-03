@@ -63,8 +63,8 @@ db.run(
   "CREATE TABLE IF NOT EXISTS child(" +
     "id TEXT PRIMARY KEY, " +
     "platform TEXT, " + // e.g., sandbox, decentraland, etc.
-    "motherContract TEXT, " +
-    "contract TEXT, " +
+    "motherERC721 TEXT, " +
+    "childERC721 TEXT, " +
     "metadata TEXT)" // metadata (object <-> string)
 );
 
@@ -88,29 +88,6 @@ app.get("/bidding/:id", function (req, res) {
           status: 200,
           message: "entry displayed successfully",
           bidding: bidding,
-        });
-      }
-    );
-  });
-});
-
-app.get("/child/:id", function (req, res) {
-  db.serialize(() => {
-    db.get(
-      "SELECT * FROM child WHERE id =?",
-      [String(req.params.id)],
-      function (err, child) {
-        if (err) console.error(err.message);
-        if (!child) return res.send({ status: 204, message: "No entry found" });
-
-        const metadata = JSON.parse(child.metadata);
-        return res.send({
-          status: 200,
-          message: "entry displayed successfully",
-          child: {
-            ...child,
-            metadata,
-          },
         });
       }
     );
@@ -151,33 +128,6 @@ app.post("/bidding", function (req, res) {
   });
 });
 
-app.post("/child", function (req, res) {
-  const data = req.body;
-
-  db.serialize(() => {
-    fs.readdirSync("./bayc/").forEach((file) => {
-      const id = String(file);
-
-      const platform = data.platform;
-      const motherContract = data.motherContract;
-      const contract = data.contract;
-
-      const metadata = JSON.stringify(
-        JSON.parse(fs.readFileSync("./bayc/" + id))
-      );
-      db.run(
-        "INSERT INTO child(id,platform,motherContract,contract,metadata) VALUES(?,?,?,?,?)",
-        [id, platform, motherContract, contract, metadata]
-      );
-    });
-
-    return res.send({
-      status: 200,
-      message: "New `child`s has been added into the database",
-    });
-  });
-});
-
 app.delete("/bidding/:id", function (req, res) {
   db.serialize(() => {
     db.run("DELETE FROM bidding WHERE id = ?", req.params.id, function (err) {
@@ -188,6 +138,93 @@ app.delete("/bidding/:id", function (req, res) {
         message: "Entry deleted",
         status: 200,
       });
+    });
+  });
+});
+
+app.get("/child/:id", function (req, res) {
+  db.serialize(() => {
+    db.get(
+      "SELECT * FROM child WHERE id =?",
+      [String(req.params.id)],
+      function (err, child) {
+        if (err) console.error(err.message);
+        if (!child) return res.send({ status: 204, message: "No entry found" });
+
+        const metadata = JSON.parse(child.metadata);
+        return res.send({
+          status: 200,
+          message: "entry displayed successfully",
+          child: {
+            ...child,
+            metadata,
+          },
+        });
+      }
+    );
+  });
+});
+
+app.post("/child/:num", function (req, res) {
+  const data = req.body;
+  console.log(data);
+  const num = req.params.num;
+
+  const platform = data.platform;
+  const childERC721 = data.childERC721;
+  const motherContract = data.motherERC721;
+  const motherContractName = data.motherERC721Name;
+
+  db.serialize(() => {
+    for (let i = 0; i < num; i++) {
+      const id = motherContractName + "-" + platform + "-" + String(i);
+      const metadata = JSON.stringify(
+        JSON.parse(fs.readFileSync("./bayc/" + String(i)))
+      );
+
+      // TODO: check if id exists already
+      try {
+        db.run(
+          "INSERT INTO child(id,platform,motherERC721,childERC721,metadata) VALUES(?,?,?,?,?)",
+          [id, platform, motherContract, childERC721, metadata]
+        );
+      } catch (err) {
+        console.log(err);
+      }
+    }
+
+    return res.send({
+      status: 200,
+      message: `New collection(${
+        motherContractName + " at " + platform
+      }) has been added into the database`,
+    });
+  });
+});
+
+app.post("/mother", function (req, res) {
+  const data = req.body;
+
+  db.serialize(() => {
+    fs.readdirSync("./bayc/").forEach((file) => {
+      const platform = data.platform;
+      const contract = data.contract;
+      const motherContract = data.motherContract;
+      const motherContractName = data.motherContractName;
+
+      const id = motherContractName + "-" + platform + "-" + String(file);
+      const metadata = JSON.stringify(
+        JSON.parse(fs.readFileSync("./bayc/" + String(file)))
+      );
+      db.run(
+        "INSERT INTO child(id,platform,motherContract,contract,metadata) VALUES(?,?,?,?,?)",
+        [id, platform, motherContract, contract, metadata]
+      );
+    });
+
+    return res.send({
+      status: 200,
+      message: `New ${child} has been added into the database`,
     });
   });
 });
