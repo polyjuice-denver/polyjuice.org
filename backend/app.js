@@ -1,3 +1,4 @@
+const fs = require("fs");
 const http = require("http");
 const express = require("express");
 const bodyParser = require("body-parser");
@@ -43,14 +44,76 @@ const calculateBiddingHash = (bidding) => {
 };
 
 const server = http.createServer(app);
-const db = new sqlite3.Database("./bidding.db");
+const db = new sqlite3.Database("./polyjuice.db");
 db.run(
-  "CREATE TABLE IF NOT EXISTS bidding(id TEXT, lender TEXT, borrower TEXT, erc721 TEXT, tokenId TEXT, erc20 TEXT, amount TEXT, listingExpiration TEXT, biddingExpiration TEXT, duration TEXT, signature TEXT)"
+  "CREATE TABLE IF NOT EXISTS bidding(" +
+    "id TEXT PRIMARY KEY, " +
+    "lender TEXT, " +
+    "borrower TEXT, " +
+    "erc721 TEXT, " +
+    "tokenId TEXT, " +
+    "erc20 TEXT, " +
+    "amount TEXT, " +
+    "listingExpiration TEXT, " +
+    "biddingExpiration TEXT, " +
+    "duration TEXT, " +
+    "signature TEXT)"
+);
+db.run(
+  "CREATE TABLE IF NOT EXISTS child(" +
+    "id TEXT PRIMARY KEY, " +
+    "platform TEXT, " + // e.g., sandbox, decentraland, etc.
+    "motherContract TEXT, " +
+    "contract TEXT, " +
+    "metadata TEXT)" // metadata (object <-> string)
 );
 
 app.get("/", function (req, res) {
   res.send({
     message: "Welcome! I am a wizard who makes polyjuice.",
+  });
+});
+
+app.get("/bidding/:id", function (req, res) {
+  db.serialize(() => {
+    db.get(
+      "SELECT * FROM bidding WHERE id =?",
+      [req.params.id],
+      function (err, bidding) {
+        if (err) console.error(err.message);
+        if (!bidding)
+          return res.send({ status: 204, message: "No entry found" });
+
+        return res.send({
+          status: 200,
+          message: "entry displayed successfully",
+          bidding: bidding,
+        });
+      }
+    );
+  });
+});
+
+app.get("/child/:id", function (req, res) {
+  db.serialize(() => {
+    db.get(
+      "SELECT * FROM child WHERE id =?",
+      [String(req.params.id)],
+      function (err, child) {
+        if (err) console.error(err.message);
+        if (!child) return res.send({ status: 204, message: "No entry found" });
+
+        const metadata = JSON.parse(child.metadata);
+        return res.send({
+          status: 200,
+          message: "entry displayed successfully",
+          child: {
+            ...child,
+            metadata,
+          },
+        });
+      }
+    );
   });
 });
 
@@ -88,23 +151,30 @@ app.post("/bidding", function (req, res) {
   });
 });
 
-app.get("/bidding/:id", function (req, res) {
-  db.serialize(() => {
-    db.get(
-      "SELECT * FROM bidding WHERE id =?",
-      [req.params.id],
-      function (err, bidding) {
-        if (err) console.error(err.message);
-        if (!bidding)
-          return res.send({ status: 204, message: "No entry found" });
+app.post("/child", function (req, res) {
+  const data = req.body;
 
-        return res.send({
-          status: 200,
-          message: "entry displayed successfully",
-          bidding: bidding,
-        });
-      }
-    );
+  db.serialize(() => {
+    fs.readdirSync("./bayc/").forEach((file) => {
+      const id = String(file);
+
+      const platform = data.platform;
+      const motherContract = data.motherContract;
+      const contract = data.contract;
+
+      const metadata = JSON.stringify(
+        JSON.parse(fs.readFileSync("./bayc/" + id))
+      );
+      db.run(
+        "INSERT INTO child(id,platform,motherContract,contract,metadata) VALUES(?,?,?,?,?)",
+        [id, platform, motherContract, contract, metadata]
+      );
+    });
+
+    return res.send({
+      status: 200,
+      message: "New `child`s has been added into the database",
+    });
   });
 });
 
