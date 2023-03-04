@@ -81,10 +81,31 @@ app.get("/", function (req, res) {
   });
 });
 
+app.get("/bidding/:erc721/:tokenId", function (req, res) {
+  const erc721 = req.params.erc721;
+  db.serialize(() => {
+    db.all(
+      "SELECT * FROM bidding WHERE erc721 = ? AND tokenId = ?",
+      [erc721.toLowerCase(), req.params.tokenId],
+      function (err, bidding) {
+        if (err) console.error(err.message);
+        if (!bidding)
+          return res.send({ status: 204, message: "No entry found" });
+
+        return res.send({
+          status: 200,
+          message: "entry displayed successfully",
+          bidding,
+        });
+      }
+    );
+  });
+});
+
 app.get("/bidding/:id", function (req, res) {
   db.serialize(() => {
     db.get(
-      "SELECT * FROM bidding WHERE id =?",
+      "SELECT * FROM bidding WHERE id = ?",
       [req.params.id],
       function (err, bidding) {
         if (err) console.error(err.message);
@@ -110,11 +131,11 @@ app.post("/bidding", function (req, res) {
       "INSERT INTO bidding(id,lender,borrower,erc721,tokenId,erc20,amount,listingExpiration,biddingExpiration,duration,signature) VALUES(?,?,?,?,?,?,?,?,?,?,?)",
       [
         id,
-        bidding.lender,
-        bidding.borrower,
-        bidding.erc721,
+        bidding.lender.toLowerCase(),
+        bidding.borrower.toLowerCase(),
+        bidding.erc721.toLowerCase(),
         bidding.tokenId,
-        bidding.erc20,
+        bidding.erc20.toLowerCase(),
         bidding.amount,
         bidding.listingExpiration,
         bidding.biddingExpiration,
@@ -161,9 +182,9 @@ app.get("/child/market", function (req, res) {
     db.all(
       "SELECT c.*, c.expiredAt, b.duration, b.amount FROM child c " +
         "LEFT JOIN bidding b ON (" +
-        "c.childERC721 == b.erc721 AND " +
-        "c.tokenId == b.tokenId AND " +
-        "b.borrower == '0x0000000000000000000000000000000000000000' AND " + // It means that lender has listed the child.
+        "c.childERC721 = b.erc721 AND " +
+        "c.tokenId = b.tokenId AND " +
+        "b.borrower = '0x0000000000000000000000000000000000000000' AND " + // It means that lender has listed the child.
         "b.listingExpiration > strftime('%s', 'now')" + // It should be that the listing is not expired.
         ") GROUP BY c.id " +
         "ORDER BY RANDOM()",
@@ -209,18 +230,24 @@ app.get("/child/:id", function (req, res) {
   });
 });
 
-app.put("/child/:id/rented/:expiredAt", function (req, res) {
+app.put("/child/:id/rental/:expiredAt", function (req, res) {
   db.serialize(() => {
     db.run(
-      "UPDATE child SET isRented = ? AND expiredAt = ? WHERE id = ?",
-      [true, req.params.expiredAt, req.params.id],
+      "UPDATE child SET expiredAt = ? WHERE id = ?",
+      [req.params.expiredAt, req.params.id],
       function (err) {
         if (err) {
-          res.send("Error encountered while updating");
-          return console.error(err.message);
+          console.log(err.message);
+          return res.send({ status: 500, message: err.message });
         }
-        res.send("Entry updated successfully");
-        console.log("Entry updated successfully");
+
+        console.log(
+          `entry(${req.params.id}) modified successfully with ${req.params.expiredAt}`
+        );
+        return res.send({
+          status: 200,
+          message: `entry(${req.params.id}) modified successfully with ${req.params.expiredAt}`,
+        });
       }
     );
   });
@@ -231,9 +258,9 @@ app.post("/child/:num", function (req, res) {
   const num = req.params.num; // the number of NFTs
 
   const platform = data.platform;
-  const motherERC721 = data.motherERC721;
+  const motherERC721 = data.motherERC721.toLowerCase();
   const motherERC721Name = data.motherERC721Name;
-  const childERC721 = data.childERC721;
+  const childERC721 = data.childERC721.toLowerCase();
   const childERC721Name = data.childERC721Name;
 
   db.serialize(() => {
