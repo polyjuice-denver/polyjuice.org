@@ -81,6 +81,29 @@ app.get("/", function (req, res) {
   });
 });
 
+app.get("/bidding/from/:address", function (req, res) {
+  const address = req.params.address;
+  db.serialize(() => {
+    db.all(
+      "SELECT * FROM bidding b " +
+        "LEFT JOIN child c ON (b.erc721 = c.childERC721 AND b.tokenId = c.tokenId) " +
+        "WHERE (lender = ? OR borrower = ?) AND expiredAt > 0",
+      [address.toLowerCase(), address.toLowerCase()],
+      function (err, bidding) {
+        if (err) console.error(err.message);
+        if (!bidding)
+          return res.send({ status: 204, message: "No entry found" });
+
+        return res.send({
+          status: 200,
+          message: "entry displayed successfully",
+          bidding,
+        });
+      }
+    );
+  });
+});
+
 app.get("/bidding/:erc721/:tokenId", function (req, res) {
   const erc721 = req.params.erc721;
   db.serialize(() => {
