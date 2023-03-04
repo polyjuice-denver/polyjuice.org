@@ -4,14 +4,17 @@
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
-	width: 100%;
+	max-width: 1437px;
+	margin-left: auto;
+	margin-right: auto;
 	padding: 2rem 4rem 0.8rem 4rem;
 	gap: 2rem;
 	margin-bottom: 4rem;
 }
 
 
-.alchemy_logo{
-	width: 6rem;
+.polyjuice_logo{
+	width: 131px;
+	height: 32px;
 	cursor: pointer;
 }
