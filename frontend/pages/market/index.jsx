@@ -75,12 +75,10 @@ export default function MarketPage() {
   };
 
   function getPlatformBgColor(platform) {
-    console.log(platform);
     return colorByPlatform[platform];
   }
 
   function handleNftCardClick(item) {
-    console.log("handleNftCardClick");
     Router.push(`/market/${item.childERC721}/${item.tokenId}`);
   }
 
@@ -113,9 +111,7 @@ export default function MarketPage() {
   }
 
   function Renting({ expiredAt }) {
-    console.log(expiredAt);
     const now = Math.floor(new Date() / 1000);
-
     const remainingDays =
       expiredAt <= now ? 0 : Math.ceil(Math.ceil(expiredAt - now) / 86400); // 86400 seconds in a day
 
@@ -146,9 +142,7 @@ export default function MarketPage() {
   }
 
   function NftCard({ item }) {
-    console.log(item.platform);
     const bgColorClass = getPlatformBgColor(item.platform);
-    console.log(bgColorClass);
     return (
       <>
         <div
