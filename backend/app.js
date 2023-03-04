@@ -204,7 +204,7 @@ app.delete("/bidding/:id", function (req, res) {
 app.get("/child/market", function (req, res) {
   db.serialize(() => {
     db.all(
-      "SELECT c.*, c.expiredAt, b.duration, b.amount FROM child c " +
+      "SELECT c.*, b.duration, b.amount FROM child c " +
         "LEFT JOIN bidding b ON (" +
         "c.childERC721 = b.erc721 AND " +
         "c.tokenId = b.tokenId AND " +
@@ -235,7 +235,11 @@ app.get("/child/:erc721/:tokenId", function (req, res) {
   const erc721 = req.params.erc721;
   db.serialize(() => {
     db.get(
-      "SELECT * FROM child WHERE childERC721 = ? AND tokenId = ?",
+      "SELECT c.*, b.duration, b.amount FROM child c " +
+        "LEFT JOIN bidding b " +
+        "ON (c.childERC721 = b.erc721 AND c.tokenId = b.tokenId AND b.borrower = '0x0000000000000000000000000000000000000000' " +
+        "AND b.listingExpiration > strftime('%s', 'now')) " +
+        "WHERE (c.childERC721 = ? AND c.tokenId = ?) GROUP BY c.id",
       [erc721.toLowerCase(), req.params.tokenId],
       function (err, child) {
         if (err) console.error(err.message);
@@ -258,7 +262,11 @@ app.get("/child/:erc721/:tokenId", function (req, res) {
 app.get("/child/:id", function (req, res) {
   db.serialize(() => {
     db.get(
-      "SELECT * FROM child WHERE id = ?",
+      "SELECT c.*, b.duration, b.amount FROM child c " +
+        "LEFT JOIN bidding b " +
+        "ON (c.childERC721 = b.erc721 AND c.tokenId = b.tokenId AND b.borrower = '0x0000000000000000000000000000000000000000' " +
+        "AND b.listingExpiration > strftime('%s', 'now')) " +
+        "WHERE c.id = ? GROUP BY c.id",
       [String(req.params.id)],
       function (err, child) {
         if (err) console.error(err.message);
