@@ -67,6 +67,7 @@ db.run(
     "platform TEXT, " + // e.g., sandbox, decentraland, etc.
     "motherERC721 TEXT, " +
     "childERC721 TEXT, " +
+    "tokenId TEXT, " +
     "metadata TEXT)" // metadata (object <-> string)
 );
 
@@ -118,8 +119,15 @@ app.post("/bidding", function (req, res) {
       ],
       function (err) {
         if (err) {
-          return console.log(err.message);
+          console.log(err.message);
+          return res.send({
+            status: 500,
+            message: err.message,
+          });
         }
+        console.log(
+          "New `bidding` has been added into the database with id: " + id
+        );
         return res.send({
           status: 200,
           message:
@@ -141,6 +149,29 @@ app.delete("/bidding/:id", function (req, res) {
         status: 200,
       });
     });
+  });
+});
+
+app.get("/child/market", function (req, res) {
+  db.serialize(() => {
+    db.all(
+      "SELECT c.*, GROUP_CONCAT(b.id) biddingIds FROM child c LEFT JOIN bidding b ON (c.childERC721 == b.erc721 AND c.tokenId == b.tokenId) GROUP BY c.id ORDER BY biddingIds DESC",
+      function (err, market) {
+        if (err) {
+          console.log(err.message);
+          return res.send({
+            status: 500,
+            message: err.message,
+          });
+        }
+
+        console.log("All child displayed successfully");
+        return res.send({
+          status: 200,
+          market,
+        });
+      }
+    );
   });
 });
 
@@ -169,8 +200,7 @@ app.get("/child/:id", function (req, res) {
 
 app.post("/child/:num", function (req, res) {
   const data = req.body;
-  console.log(data);
-  const num = req.params.num;
+  const num = req.params.num; // the number of NFTs
 
   const platform = data.platform;
   const childERC721 = data.childERC721;
@@ -186,12 +216,19 @@ app.post("/child/:num", function (req, res) {
 
       // TODO: check if id exists already
       try {
+        console.log(
+          "New `child` has been added into the database with tokenId: " + id
+        );
         db.run(
-          "INSERT INTO child(id,platform,motherERC721,childERC721,metadata) VALUES(?,?,?,?,?)",
-          [id, platform, motherContract, childERC721, metadata]
+          "INSERT INTO child(id,platform,motherERC721,childERC721,tokenId,metadata) VALUES(?,?,?,?,?,?)",
+          [id, platform, motherContract, childERC721, i, metadata]
         );
       } catch (err) {
-        console.log(err);
+        console.log(err.message);
+        return res.send({
+          status: 500,
+          message: err.message,
+        });
       }
     }
 
