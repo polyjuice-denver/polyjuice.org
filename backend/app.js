@@ -2,6 +2,7 @@ const fs = require("fs");
 const http = require("http");
 const express = require("express");
 const bodyParser = require("body-parser");
+const cors = require("cors");
 
 const sqlite3 = require("sqlite3").verbose();
 const { ethers } = require("ethers");
@@ -9,6 +10,7 @@ const { ethers } = require("ethers");
 const app = express();
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
+app.use(cors());
 
 const calculateBiddingHash = (bidding) => {
   const biddingPacked = ethers.utils.solidityPack(
