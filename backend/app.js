@@ -201,6 +201,30 @@ app.delete("/bidding/:id", function (req, res) {
   });
 });
 
+app.get("/child/mother/:address/:tokenId", function (req, res) {
+  const motherERC721 = req.params.address;
+  db.serialize(() => {
+    db.all(
+      "SELECT c.*, b.duration, b.amount FROM child c " +
+        "LEFT JOIN bidding b " +
+        "ON (c.childERC721 = b.erc721 AND c.tokenId = b.tokenId AND b.borrower = '0x0000000000000000000000000000000000000000' " +
+        "AND b.listingExpiration > strftime('%s', 'now')) " +
+        "WHERE (c.motherERC721 = ? AND c.tokenId = ?) GROUP BY c.id",
+      [motherERC721.toLowerCase(), req.params.tokenId],
+      function (err, child) {
+        if (err) console.error(err.message);
+        if (!child) return res.send({ status: 204, message: "No entry found" });
+
+        return res.send({
+          status: 200,
+          message: "entry displayed successfully",
+          child,
+        });
+      }
+    );
+  });
+});
+
 app.get("/child/market", function (req, res) {
   db.serialize(() => {
     db.all(
