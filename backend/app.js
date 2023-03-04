@@ -66,8 +66,12 @@ db.run(
     "id TEXT PRIMARY KEY, " +
     "platform TEXT, " + // e.g., sandbox, decentraland, etc.
     "motherERC721 TEXT, " +
+    "motherERC721Name TEXT, " +
     "childERC721 TEXT, " +
+    "childERC721Name TEXT, " +
     "tokenId TEXT, " +
+    "expiredAt TEXT, " + // if expiredAt is the zero, it means the child can be rented.
+    "totalFee TEXT, " + // amount of erc20 token * rental duration
     "metadata TEXT)" // metadata (object <-> string)
 );
 
@@ -155,7 +159,14 @@ app.delete("/bidding/:id", function (req, res) {
 app.get("/child/market", function (req, res) {
   db.serialize(() => {
     db.all(
-      "SELECT c.*, GROUP_CONCAT(b.id) biddingIds FROM child c LEFT JOIN bidding b ON (c.childERC721 == b.erc721 AND c.tokenId == b.tokenId) GROUP BY c.id ORDER BY biddingIds DESC",
+      "SELECT c.*, c.expiredAt, b.duration, b.amount FROM child c " +
+        "LEFT JOIN bidding b ON (" +
+        "c.childERC721 == b.erc721 AND " +
+        "c.tokenId == b.tokenId AND " +
+        "b.borrower == '0x0000000000000000000000000000000000000000' AND " + // It means that lender has listed the child.
+        "b.listingExpiration > strftime('%s', 'now')" + // It should be that the listing is not expired.
+        ") GROUP BY c.id " +
+        "ORDER BY RANDOM()",
       function (err, market) {
         if (err) {
           console.log(err.message);
@@ -198,18 +209,42 @@ app.get("/child/:id", function (req, res) {
   });
 });
 
+app.put("/child/:id/rented/:expiredAt", function (req, res) {
+  db.serialize(() => {
+    db.run(
+      "UPDATE child SET isRented = ? AND expiredAt = ? WHERE id = ?",
+      [true, req.params.expiredAt, req.params.id],
+      function (err) {
+        if (err) {
+          res.send("Error encountered while updating");
+          return console.error(err.message);
+        }
+        res.send("Entry updated successfully");
+        console.log("Entry updated successfully");
+      }
+    );
+  });
+});
+
 app.post("/child/:num", function (req, res) {
   const data = req.body;
   const num = req.params.num; // the number of NFTs
 
   const platform = data.platform;
+  const motherERC721 = data.motherERC721;
+  const motherERC721Name = data.motherERC721Name;
   const childERC721 = data.childERC721;
-  const motherContract = data.motherERC721;
-  const motherContractName = data.motherERC721Name;
+  const childERC721Name = data.childERC721Name;
 
   db.serialize(() => {
     for (let i = 0; i < num; i++) {
-      const id = motherContractName + "-" + platform + "-" + String(i);
+      const id = (
+        motherERC721Name +
+        "-" +
+        platform +
+        "-" +
+        String(i)
+      ).toLowerCase();
       const metadata = JSON.stringify(
         JSON.parse(fs.readFileSync("./bayc/" + String(i)))
       );
@@ -220,8 +255,20 @@ app.post("/child/:num", function (req, res) {
           "New `child` has been added into the database with tokenId: " + id
         );
         db.run(
-          "INSERT INTO child(id,platform,motherERC721,childERC721,tokenId,metadata) VALUES(?,?,?,?,?,?)",
-          [id, platform, motherContract, childERC721, i, metadata]
+          "INSERT INTO child(id,platform,motherERC721,motherERC721Name,childERC721,childERC721Name,tokenId,expiredAt,totalFee,metadata) " +
+            "VALUES(?,?,?,?,?,?,?,?,?,?)",
+          [
+            id,
+            platform,
+            motherERC721,
+            motherERC721Name,
+            childERC721,
+            childERC721Name,
+            i,
+            0,
+            0,
+            metadata,
+          ]
         );
       } catch (err) {
         console.log(err.message);
@@ -235,7 +282,7 @@ app.post("/child/:num", function (req, res) {
     return res.send({
       status: 200,
       message: `New collection(${
-        motherContractName + " at " + platform
+        motherERC721Name + " at " + platform
       }) has been added into the database`,
     });
   });
@@ -247,9 +294,13 @@ app.post("/mother", function (req, res) {
   db.serialize(() => {
     fs.readdirSync("./bayc/").forEach((file) => {
       const platform = data.platform;
-      const contract = data.contract;
-      const motherContract = data.motherContract;
-      const motherContractName = data.motherContractName;
+      const motherERC721 = data.motherERC721;
+      const motherERC721Name = data.motherERC721Name;
+      const childERC721 = data.childERC721;
+      const childERC721Name = data.childERC721Name;
+      const tokenId = data.tokenId;
+      const expiredAt = data.expiredAt;
+      const totalFee = data.totalFee;
 
       const id = motherContractName + "-" + platform + "-" + String(file);
       const metadata = JSON.stringify(
