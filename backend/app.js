@@ -155,6 +155,7 @@ app.post("/bidding", function (req, res) {
         );
         return res.send({
           status: 200,
+          id,
           message:
             "New `bidding` has been added into the database with id: " + id,
         });
@@ -207,10 +208,34 @@ app.get("/child/market", function (req, res) {
   });
 });
 
+app.get("/child/:erc721/:tokenId", function (req, res) {
+  const erc721 = req.params.erc721;
+  db.serialize(() => {
+    db.get(
+      "SELECT * FROM child WHERE childERC721 = ? AND tokenId = ?",
+      [erc721.toLowerCase(), req.params.tokenId],
+      function (err, child) {
+        if (err) console.error(err.message);
+        if (!child) return res.send({ status: 204, message: "No entry found" });
+
+        const metadata = JSON.parse(child.metadata);
+        return res.send({
+          status: 200,
+          message: "entry displayed successfully",
+          child: {
+            ...child,
+            metadata,
+          },
+        });
+      }
+    );
+  });
+});
+
 app.get("/child/:id", function (req, res) {
   db.serialize(() => {
     db.get(
-      "SELECT * FROM child WHERE id =?",
+      "SELECT * FROM child WHERE id = ?",
       [String(req.params.id)],
       function (err, child) {
         if (err) console.error(err.message);
@@ -230,11 +255,12 @@ app.get("/child/:id", function (req, res) {
   });
 });
 
-app.put("/child/:id/rental/:expiredAt", function (req, res) {
+app.put("/child/:erc721/:tokenId/rental/:expiredAt", function (req, res) {
+  const erc721 = req.params.erc721;
   db.serialize(() => {
     db.run(
-      "UPDATE child SET expiredAt = ? WHERE id = ?",
-      [req.params.expiredAt, req.params.id],
+      "UPDATE child SET expiredAt = ? WHERE childERC721 = ? AND tokenId = ?",
+      [req.params.expiredAt, erc721.toLowerCase(), req.params.tokenId],
       function (err) {
         if (err) {
           console.log(err.message);
@@ -242,11 +268,11 @@ app.put("/child/:id/rental/:expiredAt", function (req, res) {
         }
 
         console.log(
-          `entry(${req.params.id}) modified successfully with ${req.params.expiredAt}`
+          `entry(${erc721} #${req.params.tokenId}) modified successfully with ${req.params.expiredAt}`
         );
         return res.send({
           status: 200,
-          message: `entry(${req.params.id}) modified successfully with ${req.params.expiredAt}`,
+          message: `entry(${erc721} #${req.params.tokenId}) modified successfully with ${req.params.expiredAt}`,
         });
       }
     );
