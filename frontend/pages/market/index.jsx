@@ -87,14 +87,16 @@ export default function MarketPage() {
   function Listed({ duration, amount }) {
     return (
       <div className="grid grid-cols-2 mt-[14px]">
-        <div className="text-polygreen text-[12px] leading-[14px]">
+        <div className="text-polygreen text-[12px] leading-[14px] mb-1">
           Duration
         </div>
-        <div className="text-polygreen text-[12px] leading-[14px]">
+        <div className="text-polygreen text-[12px] leading-[14px] mb-1">
           Price/days
         </div>
-        <div className="text-[16px] leading-[18px]">{duration} days</div>
-        <div className="text-[16px] leading-[18px]">{amount} ETH</div>
+        <div className="text-[16px] leading-[18px]">
+          {Math.ceil(duration / 86400)} days
+        </div>
+        <div className="text-[16px] leading-[18px]">{amount} USDC</div>
       </div>
     );
   }
@@ -102,7 +104,7 @@ export default function MarketPage() {
   function NotListed() {
     return (
       <div className="grid grid-cols-1 mt-[14px]">
-        <div className="text-polygreen text-[12px] leading-[14px]">
+        <div className="text-polygreen text-[12px] leading-[14px] mb-1">
           Not listed
         </div>
         <div className="text-[16px] leading-[18px]">Make Offer</div>
@@ -110,14 +112,25 @@ export default function MarketPage() {
     );
   }
 
-  function Renting({ day }) {
+  function Renting({ expiredAt }) {
+    console.log(expiredAt);
+    const now = Math.floor(new Date() / 1000);
+
+    const remainingDays =
+      expiredAt <= now ? 0 : Math.ceil(Math.ceil(expiredAt - now) / 86400); // 86400 seconds in a day
+
     return (
       <div className="grid grid-cols-1 mt-[14px]">
-        <div className="text-polygreen text-[12px] leading-[14px]">
+        <div className="text-polygreen text-[12px] leading-[14px] mb-1">
           Available in
         </div>
-        <div>
-          <div className="text-[16px] leading-[18px]">{day} Days</div>
+        <div className="flex flex-row">
+          <div className="flex-1 text-[16px] leading-[18px]">
+            {remainingDays} Days
+          </div>
+          <div className="text-xs px-3 py-1 text-black bg-polygreen rounded-3xl -mt-1 font-bold">
+            Renting
+          </div>
         </div>
       </div>
     );
@@ -125,7 +138,7 @@ export default function MarketPage() {
 
   function NftCardStatus({ item }) {
     if (item.expiredAt !== "0") {
-      return <Renting day={item.expiredAt} />;
+      return <Renting expiredAt={item.expiredAt} />;
     } else {
       if (!item.duration) return <NotListed />;
       else return <Listed duration={item.duration} amount={item.amount} />;
