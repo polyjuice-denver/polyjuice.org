@@ -8,12 +8,12 @@ import tempBaycMotherImage from '../bayc_mother_temp.png';
 
 
 const subNav = [
-  {id: 1, name: 'Lending', path: '/account/lending', selected: true, profile: true},
-  {id: 2, name: 'Renting', path: '/account/renting'},
+  {id: 1, name: 'Lending', path: '/account/lending'},
+  {id: 2, name: 'Renting', path: '/account/renting', selected: true, profile: true},
   {id: 3, name: 'My wallet', path: '/account'},
 ];
 
-export default function MyLendingPage() {
+export default function MyRentingPage() {
   const [result, setResult] = useState([{
     "id": "bayc-sandbox-15",
     "platform": "Sandbox",
@@ -103,7 +103,7 @@ export default function MyLendingPage() {
                 <div className="text-[16px] leading-[18px] text-white">{item.amount} USDC</div>
               </div>
             </div>
-
+          
           </div>
         
         </div>
@@ -118,6 +118,7 @@ export default function MyLendingPage() {
     //   const marketResponse = response.data.market;
     //   setResult(marketResponse);
     // }
+    // console.log('marketResponse', marketResponse)
     // fetchMarketData();
   }, []);
   

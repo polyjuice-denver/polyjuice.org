@@ -11,10 +11,11 @@ import tempBaycChildImage2 from './bayc_child_2_temp.png';
 import {CheckIcon} from '@heroicons/react/24/outline';
 
 const subNav = [
-  {id: 1, name: 'Lending'},
-  {id: 2, name: 'Ranking'},
-  {id: 3, name: 'My wallet', selected: true, profile: true},
+  {id: 1, name: 'Lending', path: '/account/lending'},
+  {id: 2, name: 'Renting', path: '/account/renting'},
+  {id: 3, name: 'My wallet', path: '/account', selected: true, profile: true},
 ];
+
 
 export default function MyPortionPage() {
   const [result, setResult] = useState([]);
@@ -23,6 +24,10 @@ export default function MyPortionPage() {
   const [selectedMotherNft, setSelectedMotherNft] = useState(null);
   const [selectedMotherNftsChildNfts, setSelectedMotherNftsChildNfts] = useState(
     []);
+  
+  function handleNavBtn(item) {
+    Router.push(item.path)
+  }
   
   function MotherNftCard({item}) {
     const colorByPlatform = {
@@ -246,7 +251,7 @@ export default function MyPortionPage() {
     <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
       <div className="flex flex-row items-center justify-center mb-10">
         {subNav.map((item) => (
-          <div className="w-[126px]">
+          <div className="w-[126px]" onClick={() => handleNavBtn(item)}>
             <Chip item={item}/>
           </div>
         ))
