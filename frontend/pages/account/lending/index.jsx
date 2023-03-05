@@ -4,7 +4,7 @@ import api from '../../../util/api';
 import Chip from '../../../components/Chip';
 import Router from 'next/router';
 import {classNames} from '../../../util/css';
-import tempBaycChildImg from '../bayc_child_0_temp.png';
+import tempBaycChildImg from '../bayc_child_1_temp.png';
 
 
 const subNav = [
