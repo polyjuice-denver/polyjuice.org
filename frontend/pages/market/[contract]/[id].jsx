@@ -9,6 +9,7 @@ import {
 import { trimmedAddress } from "../../../util/string";
 import { calculateFeePerDay, calculateDuration } from "../../../util/bidding";
 import { useContract, useProvider, useSigner } from "wagmi";
+import tempChildImg from './temp_child_nft.png';
 
 function MakeOfferByNotOwner({ childERC721, tokenId }) {
   const [duration, setDuration] = useState(0);
@@ -378,6 +379,8 @@ export default function MarketContractPage() {
   const [rentalDuration, setRentalDuration] = useState("");
   const [offerPrice, setOfferPrice] = useState("");
   const [offerDuration, setOfferDuration] = useState("");
+  
+  const [txSuccessModal, setTxSuccessModal] = useState(true);
 
   // "child": {
   //   "id": "bayc-sandbox-59",
@@ -552,6 +555,40 @@ export default function MarketContractPage() {
         className="relative mx-auto flex max-w-[1437px] justify-center sm:px-2
          lg:px-8 xl:px-12"
       >
+        {txSuccessModal && (
+          <>
+            <div className="fixed z-10 inset-0 bg-black opacity-50"
+            >
+            </div>
+            <div className="fixed z-10 inset-0 overflow-y-auto" >
+              <div className="flex items-center justify-center min-h-screen">
+                <div
+                  className="flex items-center justify-center bg-[#24252D] w-[586px] h-[492px] rounded-lg">
+                  <div className="flex flex-col items-center gap-4">
+                    <div className="text-polygreen text-[24px] font-semibold">Transaction Success!</div>
+                    <div>
+                      <img
+                      src={tempChildImg.src}
+                      className="w-[212px] h-[223px] object-cover object-center"
+                      />
+                    </div>
+                    <div className="flex flex-col items-center">
+                      <div className="text-white text-[16px]">You successfully claimed</div>
+                      <div className="text-polygreen text-[16px]">00.00ETH</div>
+                    </div>
+                    <div>
+                      <div
+                        className="w-[146px] h-[40px] rounded-lg text-black text-[20px] font-semibold bg-polygreen flex items-center justify-center hover:cursor-pointer"
+                      >
+                        <div className="text-center font-bold">Close</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </>
+        )}
         <div className="mx-auto flex flex-col gap-8 px-4 md:px-8 mb-32">
           <div className="flex flex-col gap-4 md:flex-row md:gap-16">
             {childNftData && (

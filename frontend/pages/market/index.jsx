@@ -35,7 +35,6 @@ export default function MarketPage() {
     },
   ];
 
-  const [modalOpen, setModalOpen] = useState(false);
   const [filters, setFilters] = useState([]);
   const [selectedFilters, setSelectedFilters] = useState([]);
   const [result, setResult] = useState([]);
