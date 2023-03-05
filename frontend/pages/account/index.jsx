@@ -35,7 +35,7 @@ export default function MyPortionPage() {
       return colorByPlatform[platform];
     }
     
-    async function handleNftCardClick(item) {
+    async function handleMotherNftCardClick(item) {
       console.log('handleNftCardClick');
       setChildNftModal(true);
       setSelectedMotherNft(item);
@@ -53,7 +53,7 @@ export default function MyPortionPage() {
         <div key={item.id} className={classNames(
           item.selected ? 'border-4 border-polygreen rounded-lg' : '',
           'w-[233px] h-[277px] mx-auto cursor-pointer',
-        )} onClick={() => handleNftCardClick(item)}>
+        )} onClick={() => handleMotherNftCardClick(item)}>
           <div
             className="relative bg-[#2A2D3A] w-[225px] h-full p-1 rounded-lg mx-auto">
             <div
@@ -94,11 +94,6 @@ export default function MyPortionPage() {
   
   function NftCardForLend({item, index}) {
 
-    async function handleLendBtn(item) {
-      console.log('handleLendBtnClick');
-
-    }
-  
     const colorByPlatform = {
       Decentraland: "bg-yellow-700",
       Sandbox: "bg-blue-700",
@@ -138,7 +133,11 @@ export default function MyPortionPage() {
           className="h-full w-full object-cover object-center"
         />
     }
-    
+    function handleLendBtn(item) {
+      console.log('handleLendClick')
+      Router.push(`/market/${item.childERC721}/${item.tokenId}`);
+    }
+
     return (
       <>
         <div key={item.id} className={classNames(
@@ -161,7 +160,7 @@ export default function MyPortionPage() {
               </p>
             </div>
             <div className="pt-[8px] mx-[10px]">
-              <div className="w-[201px] h-[41px] rounded-lg border-2 border-polygreen text-[14px] text-polygreen font-semibold hover:bg-polygreen hover:text-black flex items-center justify-center">
+              <div className="w-[201px] h-[41px] rounded-lg border-2 border-polygreen text-[14px] text-polygreen font-semibold hover:bg-polygreen hover:text-black flex items-center justify-center" onClick={() => handleLendBtn(item)}>
                 <div className="text-center">
                   Lend
                 </div>
@@ -183,13 +182,6 @@ export default function MyPortionPage() {
     fetchMarketData();
   }, []);
   
-  const handleModalBackgroundClick = (event) => {
-    setChildNftModal(false);
-    console.log('model outside click')
-    if (event.target === event.currentTarget) {
-      setChildNftModal(false);
-    }
-  };
   return (
     <>
       {childNftModal && (
@@ -197,43 +189,57 @@ export default function MyPortionPage() {
           <div className="fixed z-10 inset-0 bg-black opacity-50"
           >
           </div>
-          <div className="fixed z-10 inset-0 overflow-y-auto" onClick={handleModalBackgroundClick}>
-            <div className="flex items-center justify-center min-h-screen">
-              <div
-                className="flex items-center justify-center bg-[#24252D] w-[1392px] h-[450px] rounded-lg border-2 border-polygreen">
-                <div className="w-[1148px] h-[389px]">
-                  <div className="flex h-full">
-                
-                    {/*width 453px%*/}
-                    <div className="w-[233px] flex items-center justify-center">
-                      <MotherNftCard item={selectedMotherNft}/>
-                    </div>
-                    <div className="w-[96px] flex items-center justify-center">
-                    </div>
-                    <div
-                      className="w-[819px] bg-[#191A24] flex items-center justify-center rounded-lg">
-                      <div>
-                        <div className="text-white mb-2">
-                          Select a child NFT to lend
-                        </div>
-                        <div className="flex flex-row">
-                          {selectedMotherNftsChildNfts && (
-                            selectedMotherNftsChildNfts.map((item, index) => (
-                              <NftCardForLend item={item} index={index}/>
-                            ))
-                          )}
-                        </div>
-                      </div>
-                
-                    </div>
-              
+          <div className="fixed z-10 inset-0 overflow-y-auto">
+
+              <div className="flex items-center justify-center min-h-screen">
+                <div className="relative">
+                  <div className="absolute top-0 right-0 p-4 cursor-pointer" onClick={() => setChildNftModal(false)}>
+                    <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
                   </div>
-            
+                  <div
+                    className="flex items-center justify-center bg-[#24252D] w-[1392px] h-[450px] rounded-lg border-2 border-polygreen">
+                    <div className="w-[1148px] h-[389px]">
+                      <div className="flex h-full">
+        
+                        {/*width 453px%*/}
+                        <div className="w-[233px] flex items-center justify-center">
+                          <MotherNftCard item={selectedMotherNft}/>
+                        </div>
+                        <div className="w-[96px] flex items-center justify-center">
+                        </div>
+                        <div
+                          className="w-[819px] bg-[#191A24] flex items-center justify-center rounded-lg">
+                          <div>
+                            <div className="text-white mb-2">
+                              Select a child NFT to lend
+                            </div>
+                            <div className="flex flex-row">
+                              {selectedMotherNftsChildNfts && (
+                                selectedMotherNftsChildNfts.map((item, index) => (
+                                  <NftCardForLend item={item} index={index}/>
+                                ))
+                              )}
+                            </div>
+                          </div>
+        
+                        </div>
+      
+      
+                      </div>
+    
+    
+                    </div>
+  
+  
+  
+                  </div>
+                  
                 </div>
-          
-          
+                
+
               </div>
-            </div>
           </div>
         </>
       )}

@@ -634,7 +634,7 @@ export default function MarketContractPage() {
                     </div>
                     <div>
                       <div
-                        className="w-[146px] h-[40px] rounded-lg text-black text-[20px] font-semibold bg-polygreen flex items-center justify-center hover:cursor-pointer"
+                        className="w-[146px] h-[40px] rounded-lg text-black text-[20px] font-semibold bg-polygreen flex items-center justify-center hover:cursor-pointer" onClick={() => setTxSuccessModal(false)}
                       >
                         <div className="text-center font-bold">Close</div>
                       </div>
