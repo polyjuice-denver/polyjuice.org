@@ -20,7 +20,7 @@ for <b>Multiverse NFTs</b>
 ## 📹 Demo Video
 
 <a href="https://youtu.be/lsQlHELWQJ8" target="_blank">
- <img width="50%" src="" alt="Watch the video" width="240" height="180" border="10" />
+ <img width="50%" src="https://github.com/polyjuice-denver/polyjuice.org/blob/82551415f87ce7645d090f3802acc929c9ee5242/frontend/public/demo-thumb.png" alt="Watch the video" width="240" height="180" border="10" />
 </a>
 
 ## 💡 Introduction
