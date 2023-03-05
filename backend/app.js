@@ -179,6 +179,7 @@ app.post("/bidding", function (req, res) {
         return res.send({
           status: 200,
           id,
+          bidding,
           message:
             "New `bidding` has been added into the database with id: " + id,
         });
@@ -232,10 +233,10 @@ app.get("/child/market", function (req, res) {
         "LEFT JOIN bidding b ON (" +
         "c.childERC721 = b.erc721 AND " +
         "c.tokenId = b.tokenId AND " +
-        "b.borrower = '0x0000000000000000000000000000000000000000' AND " + // It means that lender has listed the child.
+        // "b.borrower = '0x0000000000000000000000000000000000000000' AND " + // It means that lender has listed the child.
         "b.listingExpiration > strftime('%s', 'now')" + // It should be that the listing is not expired.
         ") GROUP BY c.id " +
-        "ORDER BY RANDOM()",
+        "ORDER BY b.amount DESC, RANDOM()",
       function (err, market) {
         if (err) {
           console.log(err.message);

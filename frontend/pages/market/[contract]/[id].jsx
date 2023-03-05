@@ -1,6 +1,7 @@
 import { useRouter } from "next/router";
 import { useState, useEffect } from "react";
 import { ethers } from "ethers";
+import Router from "next/router";
 import api from "../../../util/api";
 import {
   POLYJUICE_CONTRACT_ADDRESS,
@@ -51,7 +52,10 @@ function MakeOfferByNotOwner({ childERC721, tokenId }) {
 
     const signature = await signer.signMessage(JSON.stringify(bidding));
 
-    const res = await api.post("/bidding", { ...bidding, signature });
+    await api.post("/bidding", { ...bidding, signature });
+    setBidding(
+      (await api.get(`/bidding/${childERC721}/${tokenId}`)).data.bidding
+    );
     console.log(res);
     // const result = await signBiddingInfo(signer, biddingInfo);
   };
@@ -93,7 +97,6 @@ function MakeOfferByNotOwner({ childERC721, tokenId }) {
             value={feePerDay}
             onChange={handleFeePerDayChange}
             className="bg-transparent text-right placeholder-right"
-            placeholder={"USDC/DAY"}
           />
           <div className="text-slate-400 ml-2" style={{ marginTop: "2.2px" }}>
             USDC
@@ -197,6 +200,9 @@ function ListByOwner({ childERC721, tokenId }) {
   const [usdcBalance, setUSDCBalance] = useState(0);
   const [bidding, setBidding] = useState(null);
 
+  const [listed, setListed] = useState(false);
+  const [canRent, setCanRent] = useState(false);
+
   const provider = useProvider();
   const PolyJuice = useContract({
     addressOrName: POLYJUICE_CONTRACT_ADDRESS,
@@ -236,6 +242,7 @@ function ListByOwner({ childERC721, tokenId }) {
     const signature = await signer.signMessage(JSON.stringify(bidding));
 
     await api.post("/bidding", { ...bidding, signature });
+    setListed(true);
   };
 
   const accept = async (bidding) => {
@@ -257,110 +264,152 @@ function ListByOwner({ childERC721, tokenId }) {
 
   return (
     <div>
-      <div className="flex flex-row justify-between w-full h-[64px] rounded-lg border-2 border-polygreen text-polygreen p-4 mb-4">
-        Rental Duration
-        <div className="flex flex-row">
-          <input
-            type="text"
-            value={duration}
-            onChange={handleDurationChange}
-            className="bg-transparent text-right placeholder-right"
-          />
-          <div className="text-slate-400 ml-2" style={{ marginTop: "2.2px" }}>
-            DAYS
-          </div>
-        </div>
-      </div>
-      <div className="flex flex-row justify-between w-full h-[64px] rounded-lg border-2 border-polygreen text-polygreen p-4 mb-10">
-        Price to Offer
-        <div className="flex flex-row">
-          <input
-            type="text"
-            value={feePerDay}
-            onChange={handleFeePerDayChange}
-            className="bg-transparent text-right placeholder-right"
-            placeholder={"USDC/DAY"}
-          />
-          <div className="text-slate-400 ml-2" style={{ marginTop: "2.2px" }}>
-            USDC/DAY
-          </div>
-        </div>
-      </div>
-
-      {!bidding ||
-        (bidding.length === 0 && (
+      {listed && (
+        <div>
           <div className="flex flex-col gap-4 max-w-[686px] mb-5">
-            <div className="inline-block w-full rounded-lg py-[24px] px-[32px] bg-[#2A2D3A] text-white">
-              <div className="text-[16px] font-semibold ">No Offers Yet</div>
+            <div className="flex flex-row w-full rounded-lg py-[24px] px-[32px] bg-[#2A2D3A] text-white">
+              <div className="text-[16px] font-semibold flex-1">Duration</div>
+              <div className="text-[16px] font-semibold ">7 DAYS</div>
             </div>
           </div>
-        ))}
-
-      {bidding && bidding.length > 0 && (
-        <div className="flex flex-col gap-4 max-w-[686px]">
-          <div className="inline-block w-full rounded-lg py-[24px] px-[32px] bg-[#2A2D3A] text-white">
-            <div className="text-[20px] font-bold mb-[16px]">Offers</div>
-            <div className="flex flex-row pb-2">
-              <div className="w-1/4 text-center text-polygreen">From</div>
-              <div className="w-1/4 text-center text-polygreen">
-                Price per day
+          <div className="flex flex-col gap-4 max-w-[686px] mb-5">
+            <div className="flex flex-row w-full rounded-lg py-[24px] px-[32px] bg-[#2A2D3A] text-white">
+              <div className="text-[16px] font-semibold flex-1">
+                Fee per day
               </div>
-              <div className="w-1/4 text-center text-polygreen">Duration</div>
-              <div className="w-1/4 text-center text-polygreen">Action</div>
+              <div className="text-[16px] font-semibold ">100 USDC</div>
             </div>
-            <ul role="list" className="max-h-[150px] overflow-scroll">
-              {bidding &&
-                bidding.length > 0 &&
-                bidding.map((bidding) => (
-                  <li>
-                    <div className="flex flex-row justify-between pb-2">
-                      <div className="w-1/4 text-center">
-                        {trimmedAddress(bidding.borrower)}
-                      </div>
-                      <div className="w-1/4 text-center">
-                        {calculateFeePerDay(bidding)} USDC
-                      </div>
-                      <div className="w-1/4 text-center">
-                        {calculateDuration(bidding)} DAY
-                      </div>
-                      <div className="w-1/4 text-center">
-                        <div
-                          className="text-black text-[15px] font-semibold flex items-center justify-center hover:cursor-pointer"
-                          onClick={() => accept(bidding)}
-                        >
-                          <div className="text-center font-bold bg-polygreen px-4 rounded-lg">
-                            Accept
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </li>
-                ))}
-            </ul>
+          </div>
+          <div
+            className="mt-8 w-full h-[81px] rounded-lg text-black text-[20px] font-semibold bg-polygreen flex items-center justify-center hover:cursor-pointer"
+            onClick={() => list()}
+          >
+            <div className="text-center font-bold">
+              {canRent ? "Rent Now" : "Cancel"}
+            </div>
           </div>
         </div>
       )}
+      {!listed && (
+        <div>
+          <div className="flex flex-row justify-between w-full h-[64px] rounded-lg border-2 border-polygreen text-polygreen p-4 mb-4">
+            Rental Duration
+            <div className="flex flex-row">
+              <input
+                type="text"
+                value={duration}
+                onChange={handleDurationChange}
+                className="bg-transparent text-right placeholder-right"
+              />
+              <div
+                className="text-slate-400 ml-2"
+                style={{ marginTop: "2.2px" }}
+              >
+                DAYS
+              </div>
+            </div>
+          </div>
+          <div className="flex flex-row justify-between w-full h-[64px] rounded-lg border-2 border-polygreen text-polygreen p-4 mb-10">
+            Price to Offer
+            <div className="flex flex-row">
+              <input
+                type="text"
+                value={feePerDay}
+                onChange={handleFeePerDayChange}
+                className="bg-transparent text-right placeholder-right"
+              />
+              <div
+                className="text-slate-400 ml-2"
+                style={{ marginTop: "2.2px" }}
+              >
+                USDC/DAY
+              </div>
+            </div>
+          </div>
 
-      <div className="flex flex-row justify-between w-full h-[64px] rounded-lg border-2 border-polygreen text-polygreen p-4 mb-4 mt-4">
-        Listing Duration
-        <div className="flex flex-row">
-          <input
-            type="text"
-            value={listingExpiration}
-            onChange={handleListingExpirationChange}
-            className="bg-transparent text-right placeholder-right"
-          />
-          <div className="text-slate-400 ml-2" style={{ marginTop: "2.2px" }}>
-            DAYS
+          {!bidding ||
+            (bidding.length === 0 && (
+              <div className="flex flex-col gap-4 max-w-[686px] mb-5">
+                <div className="inline-block w-full rounded-lg py-[24px] px-[32px] bg-[#2A2D3A] text-white">
+                  <div className="text-[16px] font-semibold ">
+                    No Offers Yet
+                  </div>
+                </div>
+              </div>
+            ))}
+
+          {bidding && bidding.length > 0 && (
+            <div className="flex flex-col gap-4 max-w-[686px]">
+              <div className="inline-block w-full rounded-lg py-[24px] px-[32px] bg-[#2A2D3A] text-white">
+                <div className="text-[20px] font-bold mb-[16px]">Offers</div>
+                <div className="flex flex-row pb-2">
+                  <div className="w-1/4 text-center text-polygreen">From</div>
+                  <div className="w-1/4 text-center text-polygreen">
+                    Price per day
+                  </div>
+                  <div className="w-1/4 text-center text-polygreen">
+                    Duration
+                  </div>
+                  <div className="w-1/4 text-center text-polygreen">Action</div>
+                </div>
+                <ul role="list" className="max-h-[150px] overflow-scroll">
+                  {bidding &&
+                    bidding.length > 0 &&
+                    bidding.map((bidding) => (
+                      <li>
+                        <div className="flex flex-row justify-between pb-2">
+                          <div className="w-1/4 text-center">
+                            {trimmedAddress(bidding.borrower)}
+                          </div>
+                          <div className="w-1/4 text-center">
+                            {calculateFeePerDay(bidding)} USDC
+                          </div>
+                          <div className="w-1/4 text-center">
+                            {calculateDuration(bidding)} DAY
+                          </div>
+                          <div className="w-1/4 text-center">
+                            <div
+                              className="text-black text-[15px] font-semibold flex items-center justify-center hover:cursor-pointer"
+                              onClick={() => accept(bidding)}
+                            >
+                              <div className="text-center font-bold bg-polygreen px-4 rounded-lg">
+                                Accept
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </li>
+                    ))}
+                </ul>
+              </div>
+            </div>
+          )}
+
+          <div className="flex flex-row justify-between w-full h-[64px] rounded-lg border-2 border-polygreen text-polygreen p-4 mb-4 mt-4">
+            Listing Duration
+            <div className="flex flex-row">
+              <input
+                type="text"
+                value={listingExpiration}
+                onChange={handleListingExpirationChange}
+                className="bg-transparent text-right placeholder-right"
+              />
+              <div
+                className="text-slate-400 ml-2"
+                style={{ marginTop: "2.2px" }}
+              >
+                DAYS
+              </div>
+            </div>
+          </div>
+          <div
+            className="mt-8 w-full h-[81px] rounded-lg text-black text-[20px] font-semibold bg-polygreen flex items-center justify-center hover:cursor-pointer"
+            onClick={() => list()}
+          >
+            <div className="text-center font-bold">List</div>
           </div>
         </div>
-      </div>
-      <div
-        className="mt-8 w-full h-[81px] rounded-lg text-black text-[20px] font-semibold bg-polygreen flex items-center justify-center hover:cursor-pointer"
-        onClick={() => list()}
-      >
-        <div className="text-center font-bold">List</div>
-      </div>
+      )}
     </div>
   );
 }
@@ -368,6 +417,8 @@ function ListByOwner({ childERC721, tokenId }) {
 export default function MarketContractPage() {
   const router = useRouter();
   const { contract: childERC721, id: tokenId } = router.query;
+
+  const [goToRent, setGoToRent] = useState(false);
 
   const [childNftData, setChildNftData] = useState(null);
   const [rentalStatus, setRentalStatus] = useState("");
@@ -430,6 +481,11 @@ export default function MarketContractPage() {
   }
 
   useEffect(() => {
+    window.ethereum.on("accountsChanged", function (accounts) {
+      // Time to reload your interface with accounts[0]!
+      if (Router) Router.push("/market");
+    });
+
     const _setRentalStatus = (item) => {
       if (item?.expiredAt !== "0") setRentalStatus("Renting");
       else {
@@ -567,8 +623,12 @@ export default function MarketContractPage() {
                     </div>
                   </div>
                   <div className="flex aspect-square flex-row items-center justify-center overflow-hidden rounded-lg mt-2">
-                    <img
+                    {/* <img
                       src={`/bayc/${childNftData?.tokenId}.png`}
+                      className="h-full w-full object-cover object-center"
+                    /> */}
+                    <img
+                      src={`/bayc/15.png`}
                       className="h-full w-full object-cover object-center"
                     />
                   </div>
@@ -621,7 +681,7 @@ export default function MarketContractPage() {
                                 </div>
                               </div>
                               <img
-                                src={`/bayc/${childNftData?.tokenId}.png`}
+                                src={`/bayc/15-mom.png`}
                                 className="ml-4 w-[50px] h-[50px] rounded-full"
                               />
                             </div>
@@ -639,13 +699,16 @@ export default function MarketContractPage() {
                       </div>
                     </div>
                   </div>
-
                   {/* ================================================================================================================================================================== */}
-                  {/* <MakeOfferByNotOwner
-                    childERC721={childERC721}
-                    tokenId={tokenId}
-                  /> */}
-                  <ListByOwner childERC721={childERC721} tokenId={tokenId} />
+                  {goToRent && (
+                    <MakeOfferByNotOwner
+                      childERC721={childERC721}
+                      tokenId={tokenId}
+                    />
+                  )}
+                  {!goToRent && (
+                    <ListByOwner childERC721={childERC721} tokenId={tokenId} />
+                  )}
                 </div>
               </>
             )}
