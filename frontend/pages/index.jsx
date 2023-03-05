@@ -1,12 +1,6 @@
-import styles from "../styles/Home.module.css";
-import InstructionsComponent from "../components/InstructionsComponent";
+import MarketPage from "./market/index";
+import { redirect } from "next/navigation";
 
 export default function Home() {
-  return (
-    <div>
-      <main className={styles.main}>
-        <InstructionsComponent></InstructionsComponent>
-      </main>
-    </div>
-  );
+  return <MarketPage />;
 }

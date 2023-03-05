@@ -11,6 +11,7 @@ import { trimmedAddress } from "../../../util/string";
 import { calculateFeePerDay, calculateDuration } from "../../../util/bidding";
 import { useContract, useProvider } from "wagmi";
 import tempChildImg from "./temp_child_nft.png";
+import dummy from "../../../dummy.json";
 
 function MakeOfferByNotOwner({ childERC721, tokenId }) {
   const [duration, setDuration] = useState(0);
@@ -53,10 +54,10 @@ function MakeOfferByNotOwner({ childERC721, tokenId }) {
 
     const signature = await signer.signMessage(JSON.stringify(bidding));
 
-    await api.post("/bidding", { ...bidding, signature });
-    setBidding(
-      (await api.get(`/bidding/${childERC721}/${tokenId}`)).data.bidding
-    );
+    // await api.post("/bidding", { ...bidding, signature });
+    // setBidding(
+    //   (await api.get(`/bidding/${childERC721}/${tokenId}`)).data.bidding
+    // );
     console.log(res);
     // const result = await signBiddingInfo(signer, biddingInfo);
   };
@@ -252,13 +253,14 @@ function ListByOwner({ childERC721, tokenId }) {
 
   useEffect(() => {
     async function fetchBidding() {
-      const bidding = (await api.get(`/bidding/${childERC721}/${tokenId}`)).data
-        .bidding;
-      setBidding(
-        bidding.filter(
-          (bidding) => bidding.borrower !== ethers.constants.AddressZero
-        )
-      );
+      // const bidding = (await api.get(`/bidding/${childERC721}/${tokenId}`)).data
+      //   .bidding;
+      // setBidding(
+      //   bidding.filter(
+      //     (bidding) => bidding.borrower !== ethers.constants.AddressZero
+      //   )
+      // );
+      setBidding([]);
     }
     fetchBidding();
   }, []);
@@ -498,8 +500,17 @@ export default function MarketContractPage() {
     };
 
     async function fetchChildNftData() {
-      const response = await api.get(`/child/${childERC721}/${tokenId}`);
-      const childNftData = response.data.child;
+      // const response = await api.get(`/child/${childERC721}/${tokenId}`);
+      console.log(
+        dummy.market.find((child) => {
+          return String(child.tokenId) === String(tokenId);
+        })
+      );
+      // const childNftData = response.data.child;
+
+      const childNftData = dummy.market.find((child) => {
+        return String(child.tokenId) === String(tokenId);
+      });
 
       setChildNftData(childNftData);
       _setRentalStatus(childNftData);

@@ -8,6 +8,7 @@ import { classNames } from "../../util/css";
 import api from "../../util/api";
 import Image from "next/image";
 import Router from "next/router";
+import dummy from "../../dummy.json";
 
 function generateId() {
   return "_" + Math.random().toString(36).substr(2, 9);
@@ -42,9 +43,10 @@ export default function MarketPage() {
   useEffect(() => {
     setFilters(filtersInitialValue);
     async function fetchMarketData() {
-      const response = await api.get("/child/market");
-      const marketResponse = response.data.market;
-      setResult(marketResponse);
+      // const response = await api.get("/child/market");
+      // const marketResponse = response.data.market;
+      // setResult(marketResponse);
+      setResult(dummy.market);
     }
     fetchMarketData();
   }, []);
