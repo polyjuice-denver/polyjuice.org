@@ -17,8 +17,8 @@ export default function Navbar() {
 							Market
 						</Link>
 					</li>
-					<li className={classNames(router.pathname === '/profile' ? 'text-polygreen glow' : '')}>
-						<Link href="/profile">
+					<li className={classNames(router.pathname === '/account' ? 'text-polygreen glow' : '')}>
+						<Link href="/account">
 							My Potions
 						</Link>
 					</li>
