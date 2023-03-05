@@ -9,8 +9,8 @@ import {
 } from "../../../util/contract";
 import { trimmedAddress } from "../../../util/string";
 import { calculateFeePerDay, calculateDuration } from "../../../util/bidding";
-import { useContract, useProvider, useSigner } from "wagmi";
-import tempChildImg from './temp_child_nft.png';
+import { useContract, useProvider } from "wagmi";
+import tempChildImg from "./temp_child_nft.png";
 
 function MakeOfferByNotOwner({ childERC721, tokenId }) {
   const [duration, setDuration] = useState(0);
@@ -430,7 +430,7 @@ export default function MarketContractPage() {
   const [rentalDuration, setRentalDuration] = useState("");
   const [offerPrice, setOfferPrice] = useState("");
   const [offerDuration, setOfferDuration] = useState("");
-  
+
   const [txSuccessModal, setTxSuccessModal] = useState(true);
 
   // "child": {
@@ -613,28 +613,30 @@ export default function MarketContractPage() {
       >
         {txSuccessModal && (
           <>
-            <div className="fixed z-10 inset-0 bg-black opacity-50"
-            >
-            </div>
-            <div className="fixed z-10 inset-0 overflow-y-auto" >
+            <div className="fixed z-10 inset-0 bg-black opacity-50"></div>
+            <div className="fixed z-10 inset-0 overflow-y-auto">
               <div className="flex items-center justify-center min-h-screen">
-                <div
-                  className="flex items-center justify-center bg-[#24252D] w-[586px] h-[492px] rounded-lg">
+                <div className="flex items-center justify-center bg-[#24252D] w-[586px] h-[492px] rounded-lg">
                   <div className="flex flex-col items-center gap-4">
-                    <div className="text-polygreen text-[24px] font-semibold">Transaction Success!</div>
+                    <div className="text-polygreen text-[24px] font-semibold">
+                      Transaction Success!
+                    </div>
                     <div>
                       <img
-                      src={tempChildImg.src}
-                      className="w-[212px] h-[223px] object-cover object-center"
+                        src={tempChildImg.src}
+                        className="w-[212px] h-[223px] object-cover object-center"
                       />
                     </div>
                     <div className="flex flex-col items-center">
-                      <div className="text-white text-[16px]">You successfully claimed</div>
+                      <div className="text-white text-[16px]">
+                        You successfully claimed
+                      </div>
                       <div className="text-polygreen text-[16px]">00.00ETH</div>
                     </div>
                     <div>
                       <div
-                        className="w-[146px] h-[40px] rounded-lg text-black text-[20px] font-semibold bg-polygreen flex items-center justify-center hover:cursor-pointer" onClick={() => setTxSuccessModal(false)}
+                        className="w-[146px] h-[40px] rounded-lg text-black text-[20px] font-semibold bg-polygreen flex items-center justify-center hover:cursor-pointer"
+                        onClick={() => setTxSuccessModal(false)}
                       >
                         <div className="text-center font-bold">Close</div>
                       </div>
