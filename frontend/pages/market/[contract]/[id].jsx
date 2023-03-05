@@ -431,7 +431,7 @@ export default function MarketContractPage() {
   const [offerPrice, setOfferPrice] = useState("");
   const [offerDuration, setOfferDuration] = useState("");
 
-  const [txSuccessModal, setTxSuccessModal] = useState(true);
+  const [txSuccessModal, setTxSuccessModal] = useState(false);
 
   // "child": {
   //   "id": "bayc-sandbox-59",
@@ -662,14 +662,14 @@ export default function MarketContractPage() {
                     </div>
                   </div>
                   <div className="flex aspect-square flex-row items-center justify-center overflow-hidden rounded-lg mt-2">
-                    {/* <img
+                    <img
                       src={`/bayc/${childNftData?.tokenId}.png`}
                       className="h-full w-full object-cover object-center"
-                    /> */}
-                    <img
+                    />
+                    {/* <img
                       src={`/bayc/15.png`}
                       className="h-full w-full object-cover object-center"
-                    />
+                    /> */}
                   </div>
                 </div>
 
