@@ -18,7 +18,20 @@ const subNav = [
 
 
 export default function MyPortionPage() {
-  const [result, setResult] = useState([]);
+  const [result, setResult] = useState([{
+    "id": "bayc-sandbox-15",
+    "platform": "Sandbox",
+    "motherERC721": "0xe7f1725e7734ce288f8367e1bb143e90bb3f0512",
+    "motherERC721Name": "BAYC",
+    "childERC721": "0xcf7ed3acca5a467e9e704c703e8d87f634fb0fc9",
+    "childERC721Name": "BAYCs",
+    "tokenId": "15",
+    "expiredAt": "0",
+    "totalFee": "0",
+    "metadata": "{\"image\":\"ipfs://QmeGWaFNJyVpkr1LmkKye7qfUGwK9jTRW2sMxKnMDrJKtr\",\"attributes\":[{\"trait_type\":\"Background\",\"value\":\"Gray\"},{\"trait_type\":\"Fur\",\"value\":\"Gray\"},{\"trait_type\":\"Eyes\",\"value\":\"Zombie\"},{\"trait_type\":\"Mouth\",\"value\":\"Phoneme L\"},{\"trait_type\":\"Clothes\",\"value\":\"Black T\"},{\"trait_type\":\"Hat\",\"value\":\"Girl's Hair Pink\"}]}",
+    "duration": null,
+    "amount": null
+  }]);
   const [navId, setNavId] = useState(3);
   const [childNftModal, setChildNftModal] = useState(false);
   const [selectedMotherNft, setSelectedMotherNft] = useState(null);
@@ -179,12 +192,12 @@ export default function MyPortionPage() {
     
   }
   useEffect(() => {
-    async function fetchMarketData() {
-      const response = await api.get('/child/market');
-      const marketResponse = response.data.market;
-      setResult(marketResponse);
-    }
-    fetchMarketData();
+    // async function fetchMarketData() {
+    //   const response = await api.get('/child/market');
+    //   const marketResponse = response.data.market;
+    //   setResult(marketResponse);
+    // }
+    // fetchMarketData();
   }, []);
   
   return (

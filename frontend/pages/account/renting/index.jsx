@@ -4,7 +4,7 @@ import api from '../../../util/api';
 import Chip from '../../../components/Chip';
 import Router from 'next/router';
 import {classNames} from '../../../util/css';
-import tempBaycMotherImage from '../bayc_mother_temp.png';
+import tempBaycChildImg from '../bayc_child_0_temp.png';
 
 
 const subNav = [
@@ -62,7 +62,7 @@ export default function MyRentingPage() {
               {/*  className="h-full w-full object-cover object-center"*/}
               {/*/>*/}
               <img
-                src={tempBaycMotherImage.src}
+                src={tempBaycChildImg.src}
                 className="h-full w-full object-cover object-center"
               />
             </div>
